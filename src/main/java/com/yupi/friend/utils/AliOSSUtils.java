@@ -47,7 +47,7 @@ public class AliOSSUtils {
     }
 
     public static void deleteFile(String url){
-        if(!url.contains(bucketName)){
+        if(url == null || !url.contains(bucketName)){
             return;
         }
 

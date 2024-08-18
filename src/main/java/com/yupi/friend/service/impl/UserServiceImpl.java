@@ -84,6 +84,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
+
+
         if (userAccount.length() < 4) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号过短");
         }
@@ -92,10 +94,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         // 账户不能包含特殊字符
-        String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
+        String validPattern = "[^a-zA-Z0-9]";
         Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
         if (matcher.find()) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户不能包含特殊字符");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户只能包含大小写字母和数字");
+        }
+
+        // 密码只能包含特定的字符
+        validPattern = "[^a-zA-Z0-9!@#$%^&*(),<.>/?;:{}\\[\\]|]";
+        matcher = Pattern.compile(validPattern).matcher(userPassword);
+        if (matcher.find()) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码不能包含中文或其他特殊字符");
         }
 
         // 密码和校验密码相同
@@ -117,6 +126,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user = new User();
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
+
         boolean saveResult = this.save(user);
         if (!saveResult) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR);
@@ -371,7 +381,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         }
 
-        valueOperations.set(redisKey, userVOList, 1, TimeUnit.HOURS);
+        valueOperations.set(redisKey, userVOList, 20, TimeUnit.MINUTES);
         return userVOList;
 
 
@@ -480,7 +490,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public List<UserVO> queryUsers(UserQueryDTO userQueryDTO) {
+    public List<UserVO> queryUsers(UserQueryDTO userQueryDTO, User loginUser) {
         String searchText = userQueryDTO.getSearchText();
         Long id = userQueryDTO.getId();
         String username = userQueryDTO.getUsername();
@@ -496,7 +506,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Integer userRole = userQueryDTO.getUserRole();
         String[] tagList = userQueryDTO.getTagList();
 
+
+
         QueryWrapper<User> wrapper = new QueryWrapper<>();
+
+        if(loginUser != null){
+            wrapper.ne("id", loginUser.getId());
+        }
 
         wrapper.eq(id != null, "id", id).eq(StringUtils.isNotBlank(userAccount), "userAccount", userAccount).eq(gender != null, "gender", gender)
                 .eq(userStatus != null, "userStatus", userStatus).eq(userRole != null, "userRole", userRole);

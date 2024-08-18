@@ -99,12 +99,14 @@ public class UserController {
      * @return
      */
     @GetMapping("/search")
-    public BaseResponse<List<UserVO>> searchUsers(UserQueryDTO userQueryDTO) {
+    public BaseResponse<List<UserVO>> searchUsers(UserQueryDTO userQueryDTO, HttpServletRequest request) {
         if(userQueryDTO == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
-        List<UserVO> userVOList = userService.queryUsers(userQueryDTO);
+        User loginUser = userService.getLoginUser(request);
+
+        List<UserVO> userVOList = userService.queryUsers(userQueryDTO, loginUser);
 
         return ResultUtils.success(userVOList);
     }
