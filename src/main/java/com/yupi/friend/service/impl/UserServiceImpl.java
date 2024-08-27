@@ -19,6 +19,7 @@ import com.yupi.friend.model.vo.UserVO;
 import com.yupi.friend.service.UserService;
 import com.yupi.friend.service.UserTeamService;
 import com.yupi.friend.utils.AliOSSUtils;
+import com.yupi.friend.utils.HashUtils;
 import com.yupi.friend.utils.JWTUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -27,12 +28,18 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.crypto.KeyGenerator;
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -45,8 +52,6 @@ import static com.yupi.friend.constant.UserConstant.USER_LOGIN_STATE;
 /**
  * 用户服务实现类
  *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://yupi.icu">编程导航知识星球</a>
  */
 @Service
 @Slf4j
@@ -65,10 +70,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Resource
     private UserTeamService userTeamService;
-    /**
-     * 盐值，混淆密码
-     */
-    private static final String SALT = "yupi";
 
     /**
      * 用户注册
@@ -121,11 +122,32 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         // 2. 加密
-        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+//        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+
+        byte[] skey = new byte[0];
+        byte[] encryptPassword = new byte[0];
+        try {
+            KeyGenerator keyGen = KeyGenerator.getInstance("HmacMD5");
+            SecretKey key = keyGen.generateKey();
+            skey = key.getEncoded();
+            Mac mac = Mac.getInstance("HmacMD5");
+            mac.init(key);
+            mac.update(userPassword.getBytes("UTF-8"));
+            encryptPassword = mac.doFinal();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+
+
         // 3. 插入数据
         User user = new User();
         user.setUserAccount(userAccount);
-        user.setUserPassword(encryptPassword);
+        user.setUserPassword(HashUtils.hexToStr(encryptPassword));
+        user.setSecretKey(HashUtils.hexToStr(skey));
 
         boolean saveResult = this.save(user);
         if (!saveResult) {
@@ -147,13 +169,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public String userLogin(String userAccount, String userPassword) {
         // 1. 校验
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号或密码不能为空");
         }
         if (userAccount.length() < 4) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号太短");
         }
         if (userPassword.length() < 8) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码太短");
         }
         // 账户不能包含特殊字符
         String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
@@ -161,21 +183,44 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (matcher.find()) {
             return null;
         }
-        // 2. 加密
-        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
-        // 查询用户是否存在
+        // 2. 查询用户是否存在
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.select("id", "userRole");
+        queryWrapper.select("id", "userRole", "secretKey", "userPassword");
         queryWrapper.eq("userAccount", userAccount);
-        queryWrapper.eq("userPassword", encryptPassword);
-
         Map<String, Object> map = this.getMap(queryWrapper);
         // 用户不存在
         if (map == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号或密码错误");
         }
 
-        String token = JWTUtils.getToken(map);
+
+        // 3. 检验密码是否正确
+//        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+        byte[] result;
+        try {
+            byte[] hkey = HashUtils.strToHex((String)map.get("secretKey"));
+            SecretKey key = new SecretKeySpec(hkey, "HmacMD5");
+            Mac mac = Mac.getInstance("HmacMD5");
+            mac.init(key);
+            mac.update(userPassword.getBytes("UTF-8"));
+            result = mac.doFinal();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+
+        if(!HashUtils.hexToStr(result).equals(map.get("userPassword"))){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号或密码错误");
+        }
+
+        Map<String, Object> jwtMap = new HashMap<>();
+        jwtMap.put("id", map.get("id"));
+        jwtMap.put("userRole", map.get("userRole"));
+
+        String token = JWTUtils.getToken(jwtMap);
         return token;
 
     }

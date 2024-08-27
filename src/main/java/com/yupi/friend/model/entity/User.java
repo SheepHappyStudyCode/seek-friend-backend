@@ -45,6 +45,11 @@ public class User implements Serializable {
     private Integer gender;
 
     /**
+     *
+     */
+    private String secretKey;
+
+    /**
      * 密码
      */
     private String userPassword;
