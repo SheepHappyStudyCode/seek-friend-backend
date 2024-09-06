@@ -412,45 +412,6 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     }
 
     @Override
-    public List<TeamVO> recommendTeams(int num, User loginUser) {
-        // 未登录时
-        if(loginUser == null){
-            QueryWrapper<Team> wrapper = new QueryWrapper<>();
-            wrapper.last(String.format("limit %s", num));
-            List<Team> teamList = this.list(wrapper);
-            List<TeamVO> teamVOList = new ArrayList<>();
-            for (Team team: teamList) {
-                TeamVO teamVO = new TeamVO();
-                BeanUtils.copyProperties(team, teamVO);
-                teamVOList.add(teamVO);
-            }
-
-            return teamVOList;
-        }
-
-
-        // 登录时
-        
-        Long userId = loginUser.getId();
-        if(userId == null || userId < 0){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
-        }
-
-        if(num < 1){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "至少查询一个队伍");
-        }
-
-        List<Team> teamList = teamMapper.recommendTeams(userId, num);
-        List<TeamVO> teamVOList = new ArrayList<>();
-        for (Team team : teamList) {
-            TeamVO teamVO = new TeamVO();
-            BeanUtils.copyProperties(team, teamVO);
-            teamVOList.add(teamVO);
-        }
-        return teamVOList;
-    }
-
-    @Override
     public List<TeamVO> myTeams(User loginUser) {
         if(loginUser == null){
             throw new BusinessException(ErrorCode.NOT_LOGIN, "未登录");

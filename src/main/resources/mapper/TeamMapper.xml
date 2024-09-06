@@ -24,17 +24,17 @@
         updateTime,isDelete
     </sql>
 
-    <select id="recommendTeams" resultType="com.yupi.friend.model.entity.Team">
-        SELECT *
-        FROM team t
-        WHERE NOT EXISTS (
-            SELECT *
-            FROM user_team ut
-            WHERE t.id = ut.teamId
-              AND ut.userId = #{userId}
-              AND ut.isDelete = 0
-        )
-          AND isDelete = 0
-            LIMIT #{num}
-    </select>
+<!--    <select id="recommendTeams" resultType="com.yupi.friend.model.entity.Team">-->
+<!--        SELECT *-->
+<!--        FROM team t-->
+<!--        WHERE NOT EXISTS (-->
+<!--            SELECT *-->
+<!--            FROM user_team ut-->
+<!--            WHERE t.id = ut.teamId-->
+<!--              AND ut.userId = #{userId}-->
+<!--              AND ut.isDelete = 0-->
+<!--        )-->
+<!--          AND isDelete = 0-->
+<!--            LIMIT #{num}-->
+<!--    </select>-->
 </mapper>

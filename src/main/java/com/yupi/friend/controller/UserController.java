@@ -94,8 +94,8 @@ public class UserController {
 
 
     /**
-     * 根据用户名搜索所有用户
-     * @param username
+     *
+     * @param
      * @return
      */
     @GetMapping("/search")

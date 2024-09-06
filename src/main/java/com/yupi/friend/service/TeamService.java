@@ -32,8 +32,5 @@ public interface TeamService extends IService<Team> {
 
     boolean leaveTeam(Long teamId, User loginUser);
 
-
-    List<TeamVO> recommendTeams(int num, User loginUser);
-
     List<TeamVO> myTeams(User loginUser);
 }

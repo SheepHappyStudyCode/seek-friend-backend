@@ -44,14 +44,6 @@ public interface UserService extends IService<User> {
      */
     UserVO getSafetyUser(User originUser);
 
-    /**
-     * 用户注销
-     *
-     * @param request
-     * @return
-     */
-    int userLogout(HttpServletRequest request);
-
     List<UserVO> searchUsersByTags(List<String> tagNameList);
 
     /**

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yupi.friend.mapper.CommentAnswerMapper">
+
+    <resultMap id="BaseResultMap" type="com.yupi.friend.model.entity.CommentAnswer">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="commentId" column="commentId" jdbcType="BIGINT"/>
+            <result property="createUserId" column="createUserId" jdbcType="BIGINT"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="hot" column="hot" jdbcType="TINYINT"/>
+            <result property="type" column="type" jdbcType="TINYINT"/>
+            <result property="toAnswerId" column="toAnswerId" jdbcType="BIGINT"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,commentId,createUserId,
+        content,hot,type,
+        toAnswerId,createTime,updateTime,
+        isDelete
+    </sql>
+</mapper>

@@ -47,7 +47,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.yupi.friend.constant.UserConstant.ADMIN_ROLE;
-import static com.yupi.friend.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * 用户服务实现类
@@ -246,18 +245,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         return safetyUser;
-    }
-
-    /**
-     * 用户注销
-     *
-     * @param request
-     */
-    @Override
-    public int userLogout(HttpServletRequest request) {
-        // 移除登录态
-        request.getSession().removeAttribute(USER_LOGIN_STATE);
-        return 1;
     }
 
     @Override

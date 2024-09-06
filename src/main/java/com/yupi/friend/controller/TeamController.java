@@ -5,7 +5,6 @@ import com.yupi.friend.annotation.LoginCheck;
 import com.yupi.friend.common.BaseResponse;
 import com.yupi.friend.common.ErrorCode;
 import com.yupi.friend.common.ResultUtils;
-import com.yupi.friend.constant.UserConstant;
 import com.yupi.friend.exception.BusinessException;
 import com.yupi.friend.model.dto.TeamAddDTO;
 import com.yupi.friend.model.dto.TeamJoinDTO;
@@ -117,13 +116,6 @@ public class TeamController {
         boolean result = teamService.leaveTeam(teamId, loginUser);
 
         return ResultUtils.success(result);
-    }
-
-    @GetMapping("/recommend")
-    BaseResponse<List<TeamVO>> recommendTeams(int num, HttpServletRequest request){
-        User loginUser =(User) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        List<TeamVO> teamVOList= teamService.recommendTeams(num, loginUser);
-        return ResultUtils.success(teamVOList);
     }
 
     @GetMapping("/my")
