@@ -9,6 +9,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootTest
 public class UserTest {
@@ -39,5 +40,14 @@ public class UserTest {
         Assertions.assertEquals("e85465f1be16f57839e757bdb02f00c0", HashUtils.hexToStr(result));
 
 
+    }
+
+    @Test
+    void commonTest(){
+        long time = 10L;
+        TimeUnit unit = TimeUnit.MINUTES;
+        System.out.println(unit.toSeconds(time));
+        System.out.println(unit.toSeconds(time));
+        System.out.println(unit.toSeconds(time));
     }
 }

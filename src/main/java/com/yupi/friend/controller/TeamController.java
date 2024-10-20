@@ -1,7 +1,6 @@
 package com.yupi.friend.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.yupi.friend.annotation.LoginCheck;
 import com.yupi.friend.common.BaseResponse;
 import com.yupi.friend.common.ErrorCode;
 import com.yupi.friend.common.ResultUtils;
@@ -34,7 +33,6 @@ public class TeamController {
     private UserService userService;
 
     @PostMapping("/add")
-    @LoginCheck
     BaseResponse<Long> addTeam(@RequestBody TeamAddDTO teamAddDTO, HttpServletRequest request){
         User loginUser = userService.getLoginUser(request);
         Long id = teamService.addTeam(teamAddDTO, loginUser);
@@ -42,7 +40,6 @@ public class TeamController {
     }
 
     @PostMapping("/delete")
-    @LoginCheck
     BaseResponse<Boolean> deleteTeam(@RequestBody Long id, HttpServletRequest request){
         if(id == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
@@ -55,7 +52,6 @@ public class TeamController {
     }
 
     @PostMapping("/update")
-    @LoginCheck
     BaseResponse<Boolean> updateTeam(@RequestBody TeamUpdateDTO teamUpdateDTO, HttpServletRequest request){
         User loginUsre = userService.getLoginUser(request);
         Boolean result = teamService.updateTeam(teamUpdateDTO, loginUsre);
@@ -92,7 +88,6 @@ public class TeamController {
     }
 
     @PostMapping("/join")
-    @LoginCheck
     BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinDTO teamJoinDTO, HttpServletRequest request){
         if(teamJoinDTO == null ){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
@@ -106,7 +101,6 @@ public class TeamController {
 
     @ApiOperation(value = "非队长离开队伍")
     @PostMapping("/leave")
-    @LoginCheck
     BaseResponse<Boolean> leaveTeam(@RequestBody Long teamId, HttpServletRequest request){
         if(teamId == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
@@ -119,7 +113,6 @@ public class TeamController {
     }
 
     @GetMapping("/my")
-    @LoginCheck
     BaseResponse<List<TeamVO>> myTeams(HttpServletRequest request){
         User loginUser = userService.getLoginUser(request);
         List<TeamVO> teamVOList= teamService.myTeams(loginUser);

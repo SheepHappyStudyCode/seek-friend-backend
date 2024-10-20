@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yupi.friend.common.ErrorCode;
 import com.yupi.friend.constant.UserConstant;
 import com.yupi.friend.exception.BusinessException;
+import com.yupi.friend.interceptor.UserHolder;
 import com.yupi.friend.mapper.CommentMapper;
 import com.yupi.friend.mapper.PostMapper;
 import com.yupi.friend.mapper.PostThumbMapper;
@@ -198,6 +199,18 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         postThumbQueryWrapper.eq("postId", postId);
         Long likeCount = postThumbMapper.selectCount(postThumbQueryWrapper);
         postVO.setLikeCount(likeCount);
+
+        // 判断是否点赞
+        if(UserHolder.getUser() != null){
+            // 登录时
+            postThumbQueryWrapper.eq("userId", UserHolder.getUser().getId());
+            Long res = postThumbMapper.selectCount(postThumbQueryWrapper);
+            postVO.setLike(res > 0);
+        }
+        else{
+            postVO.setLike(false);
+        }
+
 
         return postVO;
 

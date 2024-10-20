@@ -6,8 +6,6 @@ import com.yupi.friend.exception.BusinessException;
 import com.yupi.friend.utils.JWTUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -18,11 +16,9 @@ import java.util.Map;
 
 /**
  * 登录校验 AOP
- *
- * @author sheephappy
  */
-@Aspect
-@Component
+//@Aspect
+//@Component
 public class LoginInterceptor {
 
     /**

@@ -304,13 +304,10 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
 
         try {
             // 尝试获取锁，最多等待100秒，上锁以后10秒自动解锁
-            boolean res = multiLock.tryLock(10, 10, TimeUnit.SECONDS);
+            boolean res = multiLock.tryLock(1, 10, TimeUnit.SECONDS);
             if (res) {
                 try {
-                    // 模拟一些工作
                     // 不能加入已经满了的队伍
-                    System.out.println("拿到锁");
-//                    Thread.sleep(5000);
                     Integer maxNum = team.getMaxNum();
                     userTeamQueryWrapper.eq("teamId", teamId);
                     long count = userTeamService.count(userTeamQueryWrapper);

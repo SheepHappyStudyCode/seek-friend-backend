@@ -110,3 +110,12 @@ INSERT INTO friend.user (id, username, userDescription, userAccount, avatarUrl, 
 INSERT INTO friend.user (id, username, userDescription, userAccount, avatarUrl, gender, secretKey, userPassword, qq, phone, email, userStatus, createTime, updateTime, isDelete, userRole, tags) VALUES (9, 'fakeUsre', '我不是小黑子 我不是小黑子 我不是小黑子', 'fakeUsre2', 'https://ts1.cn.mm.bing.net/th/id/R-C.cf6fdc8ce5cf10ef8a1e3d25ba1cf5af?rik=77GnZ5J6xVI9iQ&riu=http%3a%2f%2fi2.hdslb.com%2fbfs%2farchive%2f24418dc1f90f56a818978d849f53695ae545ee69.jpg&ehk=%2bFoPa4qMssXgghxBCqryhm8lhmLvWQ8f%2bJpw0eZFO8Y%3d&risl=&pid=ImgRaw&r=0', 0, '', 'b0dd3697a192885d7c055db46155b26a', null, '12345678', 'eve@example.com', 0, '2024-07-31 17:17:48', '2024-08-13 20:45:15', 0, 0, '["reading", "photography", "java", "女"]');
 INSERT INTO friend.user (id, username, userDescription, userAccount, avatarUrl, gender, secretKey, userPassword, qq, phone, email, userStatus, createTime, updateTime, isDelete, userRole, tags) VALUES (10, 'fakeUsre', '我不是小黑子 我不是小黑子 我不是小黑子', 'fakeUsre', 'https://ts1.cn.mm.bing.net/th/id/R-C.cf6fdc8ce5cf10ef8a1e3d25ba1cf5af?rik=77GnZ5J6xVI9iQ&riu=http%3a%2f%2fi2.hdslb.com%2fbfs%2farchive%2f24418dc1f90f56a818978d849f53695ae545ee69.jpg&ehk=%2bFoPa4qMssXgghxBCqryhm8lhmLvWQ8f%2bJpw0eZFO8Y%3d&risl=&pid=ImgRaw&r=0', 0, '', 'b0dd3697a192885d7c055db46155b26a', null, '12345678', 'eve@example.com', 0, '2024-07-31 17:17:48', '2024-07-31 17:17:48', 0, 0, '["reading", "photography", "java", "女"]');
 INSERT INTO friend.user (id, username, userDescription, userAccount, avatarUrl, gender, secretKey, userPassword, qq, phone, email, userStatus, createTime, updateTime, isDelete, userRole, tags) VALUES (602013, null, null, 'testMan', null, null, '79518a1cc45ec8aa420d2b694cbcda3ada15be76d5078c67812af0b9c48efb8212a44b19541d3c824eb9a0d4f141c4d9e16bc0d7531daf2e577654db40404997', 'da34826c9b682c5cf480c2d8086f5d73', null, null, null, 0, '2024-08-27 20:20:42', '2024-08-27 20:20:42', 0, 0, null);
+
+create table if not exists post_thumb
+(
+    id     bigint auto_increment comment 'id'
+        primary key,
+    userId bigint null comment '用户id',
+    postId bigint null comment '帖子id'
+)
+    comment '帖子点赞表';

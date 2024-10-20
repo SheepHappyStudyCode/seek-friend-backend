@@ -42,4 +42,6 @@ public class PostVO {
     private Long likeCount;
 
     private Long commentCount;
+
+    private boolean like;
 }

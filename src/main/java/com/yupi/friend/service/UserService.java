@@ -67,4 +67,8 @@ public interface UserService extends IService<User> {
     List<UserVO> queryUsersbyTeamId(Long id);
 
     List<UserVO> queryUsers(UserQueryDTO userQueryDTO, User loginUser);
+
+    UserVO queryById(Long id);
+
+     List<Long> getRecommendUserIds(Long userId);
 }

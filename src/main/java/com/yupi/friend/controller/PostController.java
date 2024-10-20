@@ -1,6 +1,5 @@
 package com.yupi.friend.controller;
 
-import com.yupi.friend.annotation.LoginCheck;
 import com.yupi.friend.common.BaseResponse;
 import com.yupi.friend.common.ErrorCode;
 import com.yupi.friend.common.IdRequest;
@@ -29,7 +28,6 @@ public class PostController {
     private UserService userService;
 
     @PostMapping("/add")
-    @LoginCheck
     BaseResponse<Long> addPost(@RequestBody PostAddDTO PostAddDTO, HttpServletRequest request){
         User loginUser = userService.getLoginUser(request);
         Long id = postService.addPost(PostAddDTO, loginUser);
@@ -37,7 +35,6 @@ public class PostController {
     }
 
     @PostMapping("/delete")
-    @LoginCheck
     BaseResponse<Boolean> deletePost(@RequestBody IdRequest idRequest, HttpServletRequest request){
         if(idRequest == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
@@ -50,7 +47,6 @@ public class PostController {
     }
 
     @PostMapping("/update")
-    @LoginCheck
     BaseResponse<Boolean> updatePost(@RequestBody PostUpdateDTO PostUpdateDTO, HttpServletRequest request){
         User loginUser = userService.getLoginUser(request);
         Boolean result = postService.updatePost(PostUpdateDTO, loginUser);

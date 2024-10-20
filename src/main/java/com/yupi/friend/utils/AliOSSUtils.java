@@ -7,6 +7,7 @@ import com.yupi.friend.exception.BusinessException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.util.Date;
 import java.util.UUID;
 
 import static com.yupi.friend.config.ConstantPropertiesUtils.*;
@@ -30,9 +31,8 @@ public class AliOSSUtils {
             String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
             ossClient.putObject(bucketName, fileName, inputStream);
 
-            //
-            https://web-friend-sheephappy.oss-cn-hangzhou.aliyuncs.com/1d9a3540-82c3-4832-bf0d-08cfa24435e2_20221114215948_1cf96.thumb.400_0.jpeg
-            return String.format("https://%s.%s/%s", bucketName, endPoint, fileName);
+
+            return ossClient.generatePresignedUrl(bucketName, fileName, new Date(System.currentTimeMillis() + 3600 * 1000)).toString();
 
         }
 
@@ -55,6 +55,7 @@ public class AliOSSUtils {
         OSS ossClient = new OSSClientBuilder().build(endPoint, accessKeyId, accessKeySecret);
 
         try {
+            // https://web-friend-sheephappy.oss-cn-hangzhou.aliyuncs.com/968c6fd4-30d7-4061-abb3-0fec7f94ffc2_%E5%B0%8F%E6%B3%A2%E5%A5%87.jpg
             String fileName = url.split(endPoint + "/")[1];
 
             ossClient.deleteObject(bucketName, fileName);

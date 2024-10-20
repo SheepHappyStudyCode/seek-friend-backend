@@ -30,8 +30,6 @@ public class RedisConfig {
 
       		   //String类型的序列化配置
                 StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-
-
        			 //Key采用String的序列化操作
                 template.setKeySerializer(stringRedisSerializer);
        			 //Hash的key也采用String的序列化方式

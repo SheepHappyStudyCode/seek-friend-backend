@@ -1,6 +1,5 @@
 package com.yupi.friend.controller;
 
-import com.yupi.friend.annotation.LoginCheck;
 import com.yupi.friend.common.BaseResponse;
 import com.yupi.friend.common.ErrorCode;
 import com.yupi.friend.common.IdRequest;
@@ -33,7 +32,6 @@ public class PostThumbController {
      * @return
      */
     @PostMapping("/update")
-    @LoginCheck
     public BaseResponse<Boolean> updateThumb(@RequestBody IdRequest idRequest, HttpServletRequest request){
         if(idRequest == null || idRequest.getId() == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);

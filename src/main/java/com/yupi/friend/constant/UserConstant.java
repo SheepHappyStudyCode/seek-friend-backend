@@ -27,4 +27,6 @@ public interface UserConstant {
      */
     int ADMIN_ROLE = 1;
 
+    int DEFAULT_RECOMMEND_NUM = 10;
+
 }

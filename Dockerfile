@@ -1,26 +1,14 @@
-# Docker 镜像构建
-# @author <a href="https://github.com/liyupi">程序员鱼皮</a>
-# @from <a href="https://yupi.icu">编程导航知识星球</a>
-FROM maven:3.5-jdk-8-alpine as builder
+# 使用官方的OpenJDK 8 JRE Alpine镜像作为基础镜像
+FROM openjdk:8-jre-alpine
 
-# Copy local code to the container image.
+# 设置工作目录
 WORKDIR /app
-COPY pom.xml .
-COPY src ./src
 
-# Build a release artifact.
-RUN mvn package -DskipTests
-#copy target/seek-friend-backend-0.0.1-SNAPSHOT.jar ./target/
+# 将JAR文件复制到容器中
+COPY seek-friend-backend-0.0.1-SNAPSHOT.jar app.jar
 
-# Run the web service on container startup.
-CMD ["java","-jar","/app/target/seek-friend-backend-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]
+# 设置环境变量
+ENV SPRING_PROFILES_ACTIVE=prod
 
-## 后端
-#docker build -t seek-friend-backend:v0.0.1 .
-#
-## 后端
-#docker run -p 8080:8080 seek-friend-backend:v0.0.1
-
-
-
-
+# 指定启动命令
+ENTRYPOINT ["java","-jar","app.jar"]

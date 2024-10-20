@@ -1,6 +1,5 @@
 package com.yupi.friend.controller;
 
-import com.yupi.friend.annotation.LoginCheck;
 import com.yupi.friend.common.BaseResponse;
 import com.yupi.friend.common.ResultUtils;
 import com.yupi.friend.model.entity.User;
@@ -21,7 +20,6 @@ public class FileController {
     private UserService userService;
 
     @PostMapping("/user/avatar")
-    @LoginCheck
     public BaseResponse<Boolean> updateUserAvatar(MultipartFile avatar, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
 

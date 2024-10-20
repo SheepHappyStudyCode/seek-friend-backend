@@ -15,17 +15,20 @@ import com.yupi.friend.model.entity.Team;
 import com.yupi.friend.model.entity.User;
 import com.yupi.friend.model.entity.UserTeam;
 import com.yupi.friend.model.entity.UserWithScore;
+import com.yupi.friend.model.message.CacheUpdateMessage;
 import com.yupi.friend.model.vo.UserVO;
+import com.yupi.friend.mq.CacheUpdateProducer;
 import com.yupi.friend.service.UserService;
 import com.yupi.friend.service.UserTeamService;
 import com.yupi.friend.utils.AliOSSUtils;
 import com.yupi.friend.utils.HashUtils;
 import com.yupi.friend.utils.JWTUtils;
+import com.yupi.friend.utils.RedisCacheClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -46,7 +49,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.yupi.friend.constant.RedisConstant.*;
 import static com.yupi.friend.constant.UserConstant.ADMIN_ROLE;
+import static com.yupi.friend.constant.UserConstant.DEFAULT_RECOMMEND_NUM;
 
 /**
  * 用户服务实现类
@@ -58,10 +63,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
 
     @Resource
+    private RedisCacheClient redisCacheClient;
+
+    @Resource
     private UserMapper userMapper;
 
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
 
     @Resource
@@ -69,6 +80,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Resource
     private UserTeamService userTeamService;
+
+    @Resource
+    private CacheUpdateProducer cacheUpdateProducer;
 
     /**
      * 用户注册
@@ -302,38 +316,57 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return loginUser != null && loginUser.getUserRole() != null && loginUser.getUserRole().equals(ADMIN_ROLE);
     }
 
+    /**
+     *
+     * @param user 要修改的用户信息
+     * @param loginUser 登录用户信息
+     * @return 操作成功或失败
+     */
     @Override
     public boolean updateUser(User user, User loginUser) {
-        if(isAdmin(user) || user.getId().equals(loginUser.getId())){
+        if(isAdmin(loginUser) || user.getId().equals(loginUser.getId())){
             long id = user.getId();
             if(id <= 0){
                 throw new BusinessException(ErrorCode.PARAMS_ERROR);
             }
 
-            User oldUser = this.getById(id);
+            UserVO oldUser = this.queryById(id);
 
             if(oldUser == null){
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "修改的对象不存在");
             }
 
             boolean result = new LambdaUpdateChainWrapper<>(userMapper)
-                    .eq(User::getId, user.getId())
+                    .eq(User::getId, id)
                     .set(user.getUsername() != null, User::getUsername, user.getUsername())
-                    .set(user.getUserAccount() != null , User::getUserAccount, user.getUserAccount())
                     .set(user.getAvatarUrl() != null , User::getAvatarUrl, user.getAvatarUrl())
                     .set(user.getGender() != null, User::getGender, user.getGender())
-                    .set(user.getUserPassword() != null , User::getUserPassword, user.getUserPassword())
                     .set(user.getQq() != null , User::getQq, user.getQq())
                     .set(user.getPhone() != null , User::getPhone, user.getPhone())
                     .set(user.getEmail() != null, User::getEmail, user.getEmail())
                     .set(user.getUserStatus() != null, User::getUserStatus, user.getUserStatus())
-                    .set(user.getCreateTime() != null, User::getCreateTime, user.getCreateTime())
-                    .set(user.getUpdateTime() != null, User::getUpdateTime, user.getUpdateTime())
-                    .set(user.getIsDelete() != null, User::getIsDelete, user.getIsDelete())
                     .set(user.getUserRole() != null, User::getUserRole, user.getUserRole())
                     .set(user.getTags() != null , User::getTags, user.getTags())
                     .set(user.getUserDescription() != null , User::getUserDescription, user.getUserDescription())
                     .update();
+            if(result){
+                // 缓存同步
+                user = query().eq("id", id).one();
+                UserVO safetyUser = getSafetyUser(user);
+//                if(user == null){
+//                    return false;
+//                }
+                String key = USER_ID_KEY + id;
+                redisCacheClient.setHashObject(key, safetyUser, USER_TTL, TimeUnit.MINUTES);
+
+                CacheUpdateMessage msg = new CacheUpdateMessage();
+                msg.setKey("recommend");
+                msg.setValue(id);
+                cacheUpdateProducer.sendCacheUpdateMessage(msg);
+            }
+
+
+
             return result;
 
         }
@@ -365,20 +398,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Type setType = new TypeToken<Set<String>>(){}.getType();
         Set<String> tagSet = gson.fromJson(loginUser.getTags(), setType);
 
-        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-        String redisKey = String.format("friend:user:recommend:%s", loginUser.getId());
+        String recommendKey = USER_RECOMMEND_KEY + loginUser.getId();
+         // 查看 redis 缓存中有没有数据
+        if(redisTemplate.hasKey(recommendKey)){
+            stringRedisTemplate.expire(recommendKey, USER_RECOMMEND_TTL, TimeUnit.MINUTES);
 
-        // 查看 redis 缓存中有没有数据
-        if(redisTemplate != null && redisTemplate.hasKey(redisKey)){
-            return (List<UserVO>) valueOperations.get(redisKey);
+            List<String> range = stringRedisTemplate.opsForList().range(recommendKey, 0, num - 1);
+            List<Long> ids = range.stream().map(Long::parseLong).collect(Collectors.toList());
+            List<String> keyList = ids.stream().map(id -> USER_ID_KEY + id).collect(Collectors.toList());
+            List<UserVO> userVOList = redisCacheClient.multiGetHashObject(keyList, UserVO.class, USER_TTL, TimeUnit.MINUTES);
+
+            if(userVOList.size() >= num){
+                return userVOList;
+            }
+
+            // 缓存数据不够，查询数据库
+            // 批量查询
+            String idStr = ids.stream().map(String::valueOf).collect(Collectors.joining(","));
+            List<User> userList = query().in("id", ids).last("ORDER BY FIELD(id, " + idStr + ")").list();
+            userVOList = userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
+            // 写入缓存
+            redisCacheClient.multiSetHashObject(keyList, userVOList, USER_TTL, TimeUnit.MINUTES);
+            return userVOList;
+
+
         }
 
+        // 寻找相似度最高的前 n 个人
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.select("id", "tags");
         List<User> userList = this.list(queryWrapper);
         PriorityQueue<UserWithScore> pq = new PriorityQueue<>(new UserWithScoreComparator());
-
-
         for (User user : userList) {
             if(user.getId().equals(loginUser.getId())){
                 continue;
@@ -397,26 +447,66 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             }
         }
 
-        List<Long> ids = new ArrayList<>();
+        List<Long> ids = new ArrayList<>(num);
         while (!pq.isEmpty()) {
-//            UserWithScore u = pq.poll();
-//            System.out.println(u.getId() + ":" + u.getScore());
-
             ids.add(0, pq.poll().getId());
         }
 
-        ArrayList<UserVO> userVOList = new ArrayList<>();
-        for (Long id : ids) {
-            User user = this.getById(id);
-            UserVO userVO = getSafetyUser(user);
-            userVOList.add(userVO);
+        // 批量查询
+        String idStr = ids.stream().map(String::valueOf).collect(Collectors.joining(","));
+        userList = query().in("id", ids).last("ORDER BY FIELD(id, " + idStr + ")").list();
+        List<UserVO> userVOList = userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
 
+        // 写入缓存
+        // 1. 缓存推荐用户的 ids
+        stringRedisTemplate.opsForList().rightPushAll(recommendKey, ids.stream().map(String::valueOf).collect(Collectors.toList()));
+        stringRedisTemplate.expire(recommendKey, USER_RECOMMEND_TTL, TimeUnit.MINUTES);
+        List<String> keyList = new ArrayList<>(userVOList.size());
+        for (UserVO userVO : userVOList) {
+            keyList.add(USER_ID_KEY + userVO.getId());
         }
 
-        valueOperations.set(redisKey, userVOList, 20, TimeUnit.MINUTES);
+        // 2. 将相应 id 的用户存入缓存
+        redisCacheClient.multiSetHashObject(keyList, userVOList, USER_TTL, TimeUnit.MINUTES);
+
         return userVOList;
 
 
+    }
+
+    public List<Long> getRecommendUserIds(Long userId){
+        User loginUser = getById(userId);
+        Gson gson = new Gson();
+        Type setType = new TypeToken<Set<String>>(){}.getType();
+        Set<String> tagSet = gson.fromJson(loginUser.getTags(), setType);
+
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("id", "tags");
+        List<User> userList = this.list(queryWrapper);
+        PriorityQueue<UserWithScore> pq = new PriorityQueue<>(new UserWithScoreComparator());
+        for (User user : userList) {
+            if(user.getId().equals(loginUser.getId())){
+                continue;
+            }
+            UserWithScore userWithScore = new UserWithScore();
+            userWithScore.setId(user.getId());
+            Set<String> tmptagSet = gson.fromJson(user.getTags(), setType);
+            userWithScore.setScore(getSimilarity(tagSet, tmptagSet));
+
+            if(pq.size() < DEFAULT_RECOMMEND_NUM){
+                pq.add(userWithScore);
+            }
+            else if(userWithScore.getScore() > pq.peek().getScore()){
+                pq.add(userWithScore);
+                pq.poll();
+            }
+        }
+
+        List<Long> ids = new ArrayList<>(DEFAULT_RECOMMEND_NUM);
+        while (!pq.isEmpty()) {
+            ids.add(0, pq.poll().getId());
+        }
+        return ids;
     }
 
 
@@ -458,20 +548,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         Long userId = loginUser.getId();
-        User originUser = this.getById(userId);
+        UserVO originUser = this.queryById(userId);
         if(originUser == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "登录用户不存在");
         }
 
-
         String url = AliOSSUtils.uploadFile(avatar);
-
 
         User updateUser = new User();
         updateUser.setId(userId);
         updateUser.setAvatarUrl(url);
 
-        this.updateById(updateUser);
+        this.updateUser(updateUser, loginUser);
 
         String originUrl = originUser.getAvatarUrl();
         AliOSSUtils.deleteFile(originUrl);
@@ -517,7 +605,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
         List<UserVO> userVOList = userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
-
         return userVOList;
     }
 
@@ -576,6 +663,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             }
             return true;
         }).map(this::getSafetyUser).collect(Collectors.toList());
+    }
+
+    @Override
+    public UserVO queryById(Long id) {
+        if(id == null || id <= 0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "查询的用户id异常");
+        }
+
+        String key = USER_ID_KEY + id;
+        UserVO userVO = redisCacheClient.getHashObject(key, UserVO.class);
+
+        if(userVO != null){
+            // 缓存存在，刷新缓存
+            redisCacheClient.expireKey(key, USER_TTL, TimeUnit.MINUTES);
+            return userVO;
+        }
+
+        User user = getById(id);
+        UserVO safetyUser = getSafetyUser(user);
+        if(safetyUser != null){
+            redisCacheClient.setHashObject(key, safetyUser, USER_TTL, TimeUnit.MINUTES);
+            return safetyUser;
+        }
+
+        return null;
     }
 
 }
