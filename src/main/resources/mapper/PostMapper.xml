@@ -12,12 +12,15 @@
             <result property="createUserId" column="createUserId" jdbcType="BIGINT"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="likeCount" column="likeCount" jdbcType="INTEGER"/>
+            <result property="commentCount" column="commentCount" jdbcType="INTEGER"/>
             <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,title,content,
         category,createUserId,createTime,
-        updateTime,isDelete
+        updateTime,likeCount,commentCount,
+        isDelete
     </sql>
 </mapper>

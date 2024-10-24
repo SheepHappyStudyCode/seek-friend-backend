@@ -9,4 +9,6 @@ public interface RabbitConstant {
 
     String USER_CACHE_QUEUE = "user.cache.queue";
 
+    String POST_THUMB_QUEUE = "post.thumb.queue";
+
 }

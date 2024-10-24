@@ -22,11 +22,14 @@ import com.yupi.friend.service.CommentAnswerService;
 import com.yupi.friend.service.CommentService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.yupi.friend.constant.RedisConstant.POST_ID_KEY;
 
 /**
 * @author Administrator
@@ -45,6 +48,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
 
     @Resource
     private CommentAnswerService commentAnswerService;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
     
     @Override
     public Long addComment(CommentAddDTO commentAddDTO, User loginUser) {
@@ -73,7 +79,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         if(!save) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR);
         }
-        
+
+        // 更改帖子的缓存
+        String key = POST_ID_KEY + postId;
+        stringRedisTemplate.opsForHash().increment(key, "commentCount", 1);
+
         return comment.getId();
     }
 

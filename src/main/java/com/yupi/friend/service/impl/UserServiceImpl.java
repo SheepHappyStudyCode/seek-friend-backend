@@ -49,6 +49,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.yupi.friend.constant.RabbitConstant.USER_CACHE_QUEUE;
 import static com.yupi.friend.constant.RedisConstant.*;
 import static com.yupi.friend.constant.UserConstant.ADMIN_ROLE;
 import static com.yupi.friend.constant.UserConstant.DEFAULT_RECOMMEND_NUM;
@@ -362,7 +363,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 CacheUpdateMessage msg = new CacheUpdateMessage();
                 msg.setKey("recommend");
                 msg.setValue(id);
-                cacheUpdateProducer.sendCacheUpdateMessage(msg);
+                cacheUpdateProducer.sendCacheUpdateMessage(msg, USER_CACHE_QUEUE);
             }
 
 

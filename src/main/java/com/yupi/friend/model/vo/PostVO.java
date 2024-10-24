@@ -39,9 +39,9 @@ public class PostVO {
 
     private UserVO createUser;
 
-    private Long likeCount;
+    private Integer likeCount;
 
-    private Long commentCount;
+    private Integer commentCount;
 
     private boolean like;
 }

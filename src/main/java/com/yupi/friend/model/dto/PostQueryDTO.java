@@ -1,14 +1,17 @@
 package com.yupi.friend.model.dto;
 
+import com.yupi.friend.common.PageQuery;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
 /**
  * 帖子
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class PostQueryDTO implements Serializable {
+public class PostQueryDTO extends PageQuery implements Serializable {
 
     private String searchText;
 

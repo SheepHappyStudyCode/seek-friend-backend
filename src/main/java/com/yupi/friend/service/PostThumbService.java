@@ -12,4 +12,10 @@ import com.yupi.friend.model.entity.User;
 public interface PostThumbService extends IService<PostThumb> {
 
     Boolean updateThumb(Long id, User loginUser);
+
+    boolean addThumb(long postId, long userId);
+
+    boolean removeThumb(long postId, long userId);
+
+    boolean updateAllThumbs();
 }

@@ -18,7 +18,6 @@ public class RabbitTest {
         CacheUpdateMessage msg = new CacheUpdateMessage();
         msg.setKey("recommend");
         msg.setValue(1L);
-        cacheUpdateProducer.sendCacheUpdateMessage(msg);
     }
 
 }

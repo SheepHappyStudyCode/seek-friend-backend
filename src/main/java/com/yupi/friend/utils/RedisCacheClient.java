@@ -42,6 +42,11 @@ public class RedisCacheClient {
         redisTemplate.expire(key, time, unit);
     }
 
+    public <T> void setHashObject(String key, T value) {
+        Map<String, Object> objectMap = BeanUtil.beanToMap(value);
+        redisTemplate.opsForHash().putAll(key, objectMap);
+    }
+
     public <T> T getHashObject(String key, Class<T> clazz) {
         Map<Object, Object> objectMap = redisTemplate.opsForHash().entries(key);
         if (!objectMap.isEmpty()) {
@@ -50,6 +55,46 @@ public class RedisCacheClient {
         return null;
     }
 
+    public <T> void multiSetHashObject(List<String> keyList, List<T> valueList) {
+        List<Map<String, Object>> mapList = valueList.stream().map(BeanUtil::beanToMap).collect(Collectors.toList());
+        RedisSerializer<String> keySerializer = (RedisSerializer<String>)redisTemplate.getKeySerializer();
+        RedisSerializer<String> hashKeySerializer = (RedisSerializer<String>)redisTemplate.getHashKeySerializer();
+        RedisSerializer<Object> hashValueSerializer = (RedisSerializer<Object>)redisTemplate.getHashValueSerializer();
+
+        redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+            for (int i = 0; i < keyList.size(); i++) {
+                String key = keyList.get(i);
+                Map<String, Object> map = mapList.get(i);
+                Map<byte[], byte[]> byteMap = map.entrySet().stream().collect(Collectors.toMap(entry -> hashKeySerializer.serialize(entry.getKey()), entry -> hashValueSerializer.serialize(entry.getValue())));
+                connection.hashCommands().hMSet(keySerializer.serialize(key), byteMap);
+
+            }
+
+            return null;
+        });
+    }
+
+    public <T> void multiSetHashObjectIfNotExist(List<String> keyList, List<T> valueList) {
+        List<Map<String, Object>> mapList = valueList.stream().map(BeanUtil::beanToMap).collect(Collectors.toList());
+        RedisSerializer<String> keySerializer = (RedisSerializer<String>)redisTemplate.getKeySerializer();
+        RedisSerializer<String> hashKeySerializer = (RedisSerializer<String>)redisTemplate.getHashKeySerializer();
+        RedisSerializer<Object> hashValueSerializer = (RedisSerializer<Object>)redisTemplate.getHashValueSerializer();
+
+        redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+            for (int i = 0; i < keyList.size(); i++) {
+                String key = keyList.get(i);
+                byte[] serializeKey = keySerializer.serialize(key);
+                if(Boolean.TRUE.equals(connection.exists(serializeKey))){
+                    continue;
+                }
+                Map<String, Object> map = mapList.get(i);
+                Map<byte[], byte[]> byteMap = map.entrySet().stream().collect(Collectors.toMap(entry -> hashKeySerializer.serialize(entry.getKey()), entry -> hashValueSerializer.serialize(entry.getValue())));
+                connection.hashCommands().hMSet(serializeKey, byteMap);
+            }
+
+            return null;
+        });
+    }
     public <T> void multiSetHashObject(List<String> keyList, List<T> valueList, Long time, TimeUnit unit) {
         List<Map<String, Object>> mapList = valueList.stream().map(BeanUtil::beanToMap).collect(Collectors.toList());
         RedisSerializer<String> keySerializer = (RedisSerializer<String>)redisTemplate.getKeySerializer();

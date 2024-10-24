@@ -3,6 +3,7 @@ package com.yupi.friend.mq;
 import com.rabbitmq.client.Channel;
 import com.yupi.friend.model.message.CacheUpdateMessage;
 import com.yupi.friend.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -19,6 +20,7 @@ import static com.yupi.friend.constant.RabbitConstant.USER_CACHE_QUEUE;
 import static com.yupi.friend.constant.RedisConstant.USER_RECOMMEND_KEY;
 
 @Component
+@Slf4j
 public class CacheUpdateConsumer {
     private static final DefaultRedisScript<Long> UPDATE_SCRIPT;
     static {
@@ -32,6 +34,8 @@ public class CacheUpdateConsumer {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+
+
     @RabbitListener(queues = USER_CACHE_QUEUE)
     public void receiveMessage(@Payload CacheUpdateMessage message, Channel channel, org.springframework.amqp.core.Message msg) throws Exception {
         try {
@@ -41,7 +45,7 @@ public class CacheUpdateConsumer {
         } catch (Exception e) {
             // 处理异常，可以选择重新入队或记录日志
             channel.basicNack(msg.getMessageProperties().getDeliveryTag(), false, true);
-            throw e;
+            log.error("用户推荐更新失败" + e);
         }
     }
 
@@ -64,4 +68,6 @@ public class CacheUpdateConsumer {
         }
 
     }
+
+
 }

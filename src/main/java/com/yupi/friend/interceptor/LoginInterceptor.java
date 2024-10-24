@@ -16,10 +16,13 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 @Slf4j
 public class LoginInterceptor implements HandlerInterceptor {
+
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception{
         //拦截器取到请求先进行判断，如果是OPTIONS请求，则放行
         if("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+//            response.setHeader("Access-Control-Allow-Origin", "http://127.0.0.1");
             return true;
         }
 

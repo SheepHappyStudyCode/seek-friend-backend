@@ -7,6 +7,9 @@ public interface RedisConstant {
 
     String USER_ID_KEY = "friend:user:id:";
     String USER_RECOMMEND_KEY = "friend:recommend:user:id:";
+    String POST_ID_KEY = "friend:post:id:";
+
+    String POST_THUMB_IDS_KEY = "friend:post:thumb:ids:";
 
     Long USER_TTL = 10L;
 

@@ -50,6 +50,16 @@ public class Post implements Serializable {
     private Date updateTime;
 
     /**
+     *
+     */
+    private Integer likeCount;
+
+    /**
+     *
+     */
+    private Integer commentCount;
+
+    /**
      * 是否删除
      */
     @TableLogic
