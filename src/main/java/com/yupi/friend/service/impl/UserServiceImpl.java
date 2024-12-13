@@ -1,5 +1,6 @@
 package com.yupi.friend.service.impl;
 
+import cn.hutool.core.lang.UUID;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -7,6 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.yupi.friend.common.ErrorCode;
 import com.yupi.friend.exception.BusinessException;
+import com.yupi.friend.interceptor.UserHolder;
 import com.yupi.friend.mapper.TeamMapper;
 import com.yupi.friend.mapper.UserMapper;
 import com.yupi.friend.model.comparator.UserWithScoreComparator;
@@ -22,7 +24,6 @@ import com.yupi.friend.service.UserService;
 import com.yupi.friend.service.UserTeamService;
 import com.yupi.friend.utils.AliOSSUtils;
 import com.yupi.friend.utils.HashUtils;
-import com.yupi.friend.utils.JWTUtils;
 import com.yupi.friend.utils.RedisCacheClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -230,13 +231,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号或密码错误");
         }
 
-        Map<String, Object> jwtMap = new HashMap<>();
-        jwtMap.put("id", map.get("id"));
-        jwtMap.put("userRole", map.get("userRole"));
+        // 将用户 id 和 role 存入 session
+        Map<String, Object> session = new HashMap<>();
+        session.put("id", map.get("id"));
+        session.put("userRole", map.get("userRole"));
 
-        String token = JWTUtils.getToken(jwtMap);
+        String token = UUID.randomUUID().toString(true);
+        String key = USER_LOGIN_KEY + token;
+        redisTemplate.opsForValue().set(key, session, USER_LOGIN_TTL, TimeUnit.MINUTES);
         return token;
-
     }
 
     /**
@@ -292,20 +295,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     /**
      * 是否为管理员
      *
-     * @param request
+     * @param
      * @return
      */
-    public boolean isAdmin(HttpServletRequest request) {
-        if(request == null){
-            throw new BusinessException(ErrorCode.NOT_LOGIN);
-        }
-
+    public boolean isAdmin() {
         // 当前登录用户
-        String token = request.getHeader("Authorization");
-        Map<String, Object> userInfo = JWTUtils.verifyToken(token);
-
-        Integer userRole = (Integer)userInfo.get("userRole");
-        if(userRole != ADMIN_ROLE){
+        int role = UserHolder.getUser().getUserRole();
+        if(role != ADMIN_ROLE){
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
 
@@ -526,20 +522,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public User getLoginUser(HttpServletRequest request) {
-        if(request == null){
-            throw  new BusinessException(ErrorCode.NOT_LOGIN);
-        }
-
-        String token = request.getHeader("Authorization");
-        Map<String, Object> userInfo = JWTUtils.verifyToken(token);
-
-        if(userInfo == null){
-            return null;
-        }
-
-
-
-        return this.getById((Integer)userInfo.get("id"));
+        Long id = UserHolder.getUser().getId();
+        return this.getById(id);
     }
 
     @Override

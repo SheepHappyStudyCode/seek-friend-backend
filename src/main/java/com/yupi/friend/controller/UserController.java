@@ -5,20 +5,19 @@ import com.yupi.friend.common.BaseResponse;
 import com.yupi.friend.common.ErrorCode;
 import com.yupi.friend.common.ResultUtils;
 import com.yupi.friend.exception.BusinessException;
+import com.yupi.friend.interceptor.UserHolder;
 import com.yupi.friend.model.dto.UserQueryDTO;
 import com.yupi.friend.model.entity.User;
 import com.yupi.friend.model.request.UserLoginRequest;
 import com.yupi.friend.model.request.UserRegisterRequest;
 import com.yupi.friend.model.vo.UserVO;
 import com.yupi.friend.service.UserService;
-import com.yupi.friend.utils.JWTUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -72,18 +71,13 @@ public class UserController {
     /**
      * 获取当前用户
      *
-     * @param request
+     * @param
      * @return
      */
     @GetMapping("/current")
-    public BaseResponse<UserVO> getCurrentUser(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        Map<String, Object> userInfo = JWTUtils.verifyToken(token);
-        if(userInfo == null){
-            throw new BusinessException(ErrorCode.NOT_LOGIN);
-        }
-        Integer id = (Integer) userInfo.get("id");
-        UserVO safetyUser = userService.queryById(id.longValue());
+    public BaseResponse<UserVO> getCurrentUser() {
+        Long userId = UserHolder.getUser().getId();
+        UserVO safetyUser = userService.queryById(userId);
         return ResultUtils.success(safetyUser);
     }
 

@@ -1,13 +1,13 @@
 package com.yupi.friend.job;
+
 import com.yupi.friend.model.entity.Post;
 import com.yupi.friend.model.entity.PostThumb;
 import com.yupi.friend.service.PostService;
 import com.yupi.friend.service.PostThumbService;
 import com.yupi.friend.utils.RedisCacheClient;
-import org.springframework.context.event.EventListener;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import static com.yupi.friend.constant.RedisConstant.POST_ID_KEY;
 import static com.yupi.friend.constant.RedisConstant.POST_THUMB_IDS_KEY;
 
-@Component
+//@Component
 public class CacheLoader {
 
     @Resource

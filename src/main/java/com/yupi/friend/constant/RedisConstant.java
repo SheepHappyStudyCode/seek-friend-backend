@@ -14,4 +14,8 @@ public interface RedisConstant {
     Long USER_TTL = 10L;
 
     Long USER_RECOMMEND_TTL = 60L;
+
+    String USER_LOGIN_KEY = "friend:user:login:";
+
+    Long USER_LOGIN_TTL = 30L;
 }
