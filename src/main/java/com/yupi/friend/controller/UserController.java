@@ -13,10 +13,14 @@ import com.yupi.friend.model.request.UserRegisterRequest;
 import com.yupi.friend.model.vo.UserVO;
 import com.yupi.friend.service.UserService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+
+import static com.yupi.friend.constant.RedisConstant.USER_LOGIN_KEY;
 
 @RestController
 @RequestMapping("/user")
@@ -24,6 +28,9 @@ public class UserController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private RedisTemplate redisTemplate;
 
     /**
      * 用户注册
@@ -64,6 +71,15 @@ public class UserController {
         String token = userService.userLogin(userAccount, userPassword);
         
         return ResultUtils.success(token);
+    }
+
+
+    @PostMapping("/logout")
+    public BaseResponse<Integer> userLogout(HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        String key = USER_LOGIN_KEY + token;
+        redisTemplate.delete(key);
+        return ResultUtils.success(0);
     }
     
 
