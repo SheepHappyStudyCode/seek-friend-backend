@@ -1,7 +1,7 @@
 package com.yupi.friend.mapper;
 
-import com.yupi.friend.model.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.yupi.friend.model.entity.User;
 
 /**
  * 用户 Mapper

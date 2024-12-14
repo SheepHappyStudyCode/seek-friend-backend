@@ -15,7 +15,6 @@ import com.yupi.friend.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -28,18 +27,18 @@ public class CommentController {
     private UserService userService;
 
     @PostMapping("/add")
-    BaseResponse<Long> addComment(@RequestBody CommentAddDTO CommentAddDTO, HttpServletRequest request){
-        User loginUser = userService.getLoginUser(request);
+    BaseResponse<Long> addComment(@RequestBody CommentAddDTO CommentAddDTO){
+        User loginUser = userService.getLoginUser();
         Long id = commentService.addComment(CommentAddDTO, loginUser);
         return ResultUtils.success(id);
     }
 
     @PostMapping("/delete")
-    BaseResponse<Boolean> deleteComment(@RequestBody IdRequest idRequest, HttpServletRequest request){
+    BaseResponse<Boolean> deleteComment(@RequestBody IdRequest idRequest){
         if(idRequest == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
 
         boolean result = commentService.deleteCommentById(idRequest.getId(), loginUser);
 
@@ -47,8 +46,8 @@ public class CommentController {
     }
 
     @PostMapping("/update")
-    BaseResponse<Boolean> updateComment(@RequestBody CommentUpdateDTO CommentUpdateDTO, HttpServletRequest request){
-        User loginUser = userService.getLoginUser(request);
+    BaseResponse<Boolean> updateComment(@RequestBody CommentUpdateDTO CommentUpdateDTO){
+        User loginUser = userService.getLoginUser();
         Boolean result = commentService.updateComment(CommentUpdateDTO, loginUser);
         return ResultUtils.success(result);
     }

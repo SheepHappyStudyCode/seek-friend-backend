@@ -1,7 +1,7 @@
 package com.yupi.friend.mapper;
 
-import com.yupi.friend.model.entity.Post;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.yupi.friend.model.entity.Post;
 
 /**
 * @author Administrator

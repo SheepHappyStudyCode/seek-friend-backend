@@ -6,7 +6,6 @@ import com.yupi.friend.model.entity.User;
 import com.yupi.friend.model.vo.UserVO;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -60,7 +59,7 @@ public interface UserService extends IService<User> {
 
     List<UserVO> recommendUsers(int num, User loginUser);
 
-    User getLoginUser(HttpServletRequest request);
+    User getLoginUser();
 
     boolean uploadAvatar(MultipartFile avatar, User loginUser);
 

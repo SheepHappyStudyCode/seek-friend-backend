@@ -13,12 +13,17 @@ public class ThumbTest {
     private PostThumbService postThumbService;
 
     @Test
-    public void testAdd() {
-        postThumbService.addThumb(4, 2);
-    }
-
-    @Test
-    public void testRemove(){
-        postThumbService.removeThumb(4, 2);
+    public void testThumb(){
+        long userId = 1;
+        long postId = 4;
+        for(int i = 0; i < 10; i++){
+            Integer ret = postThumbService.updateThumbInDb(postId, userId);
+            if(ret == 0){
+                System.out.println("点赞成功");
+            }
+            else{
+                System.out.println("取消点赞成功");
+            }
+        }
     }
 }

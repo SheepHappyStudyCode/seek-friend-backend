@@ -2,7 +2,6 @@ package com.yupi.friend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yupi.friend.model.entity.PostThumb;
-import com.yupi.friend.model.entity.User;
 
 /**
 * @author Administrator
@@ -11,11 +10,11 @@ import com.yupi.friend.model.entity.User;
 */
 public interface PostThumbService extends IService<PostThumb> {
 
-    Boolean updateThumb(Long id, User loginUser);
+    Boolean updateThumbInRedis(Long postId, Long userId);
 
-    boolean addThumb(long postId, long userId);
-
-    boolean removeThumb(long postId, long userId);
+    Integer updateThumbInDb(Long postId, Long userId);
 
     boolean updateAllThumbs();
+
+    Integer updateThumb(Long postId, Long userId);
 }

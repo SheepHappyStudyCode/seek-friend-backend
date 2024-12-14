@@ -8,7 +8,6 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * 点赞的定时任务
@@ -23,12 +22,9 @@ public class LikeTask extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-
-        log.info("LikeTask-------- {}", sdf.format(new Date()));
-
-        //将 Redis 里的点赞信息同步到数据库里
-
-        postThumbService.updateAllThumbs();
+//        log.info("LikeTask-------- {}", sdf.format(new Date()));
+//        //将 Redis 里的点赞信息同步到数据库里
+//        postThumbService.updateAllThumbs();
 
     }
 }

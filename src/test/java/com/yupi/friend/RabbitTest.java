@@ -1,7 +1,7 @@
 package com.yupi.friend;
 
 import com.yupi.friend.model.message.CacheUpdateMessage;
-import com.yupi.friend.mq.CacheUpdateProducer;
+import com.yupi.friend.mq.MessageProducer;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -11,7 +11,7 @@ import javax.annotation.Resource;
 public class RabbitTest {
 
     @Resource
-    private CacheUpdateProducer cacheUpdateProducer;
+    private MessageProducer cacheUpdateProducer;
 
     @Test
     public void testSend() {

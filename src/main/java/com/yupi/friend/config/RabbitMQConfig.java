@@ -5,6 +5,7 @@ import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static com.yupi.friend.constant.RabbitConstant.POST_THUMB_QUEUE;
 import static com.yupi.friend.constant.RabbitConstant.USER_CACHE_QUEUE;
 
 @Configuration
@@ -15,6 +16,12 @@ public class RabbitMQConfig {
         return QueueBuilder.durable(USER_CACHE_QUEUE).build();
     }
 
-
+    @Bean
+    public Queue postThumbQueue() {
+//        Map<String, Object> args = new HashMap<>();
+//        args.put("x-single-active-consumer", true);
+//        return QueueBuilder.durable(POST_THUMB_QUEUE).withArguments(args).build();
+        return QueueBuilder.durable(POST_THUMB_QUEUE).build();
+    }
 
 }

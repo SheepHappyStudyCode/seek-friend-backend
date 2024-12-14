@@ -16,7 +16,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -88,12 +87,12 @@ public class UserController {
      * @return
      */
     @GetMapping("/search")
-    public BaseResponse<List<UserVO>> searchUsers(UserQueryDTO userQueryDTO, HttpServletRequest request) {
+    public BaseResponse<List<UserVO>> searchUsers(UserQueryDTO userQueryDTO) {
         if(userQueryDTO == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
 
         List<UserVO> userVOList = userService.queryUsers(userQueryDTO, loginUser);
 
@@ -101,12 +100,12 @@ public class UserController {
     }
 
     @GetMapping("/recommend")
-    public BaseResponse<List<UserVO>> recommendUsers(int num, HttpServletRequest request) {
+    public BaseResponse<List<UserVO>> recommendUsers(int num) {
         if(num < 1){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "至少推荐一个用户");
         }
 
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         List<UserVO> userVOList = userService.recommendUsers(num, loginUser);
         return ResultUtils.success(userVOList);
     }
@@ -134,13 +133,13 @@ public class UserController {
     /**
      *
      * @param user 修改的用户
-     * @param request
+     * @param
      * @return 更新的数据条数， 失败返回 0， 成功返回 1
      */
     @PostMapping("/update")
-    public BaseResponse<Boolean> updateUser(@RequestBody User user, HttpServletRequest request) {
+    public BaseResponse<Boolean> updateUser(@RequestBody User user) {
 
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
 
         boolean result = userService.updateUser(user, loginUser);
 

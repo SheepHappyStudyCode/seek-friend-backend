@@ -33,8 +33,8 @@ public class TeamController {
     private UserService userService;
 
     @PostMapping("/add")
-    BaseResponse<Long> addTeam(@RequestBody TeamAddDTO teamAddDTO, HttpServletRequest request){
-        User loginUser = userService.getLoginUser(request);
+    BaseResponse<Long> addTeam(@RequestBody TeamAddDTO teamAddDTO){
+        User loginUser = userService.getLoginUser();
         Long id = teamService.addTeam(teamAddDTO, loginUser);
         return ResultUtils.success(id);
     }
@@ -44,7 +44,7 @@ public class TeamController {
         if(id == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
 
         boolean result = teamService.deleteTeamById(id, loginUser);
 
@@ -52,8 +52,8 @@ public class TeamController {
     }
 
     @PostMapping("/update")
-    BaseResponse<Boolean> updateTeam(@RequestBody TeamUpdateDTO teamUpdateDTO, HttpServletRequest request){
-        User loginUsre = userService.getLoginUser(request);
+    BaseResponse<Boolean> updateTeam(@RequestBody TeamUpdateDTO teamUpdateDTO){
+        User loginUsre = userService.getLoginUser();
         Boolean result = teamService.updateTeam(teamUpdateDTO, loginUsre);
         return ResultUtils.success(result);
     }
@@ -70,8 +70,8 @@ public class TeamController {
     }
 
     @GetMapping("/list")
-    BaseResponse<List<TeamVO>> listTeams(TeamQueryDTO teamQueryDTO, HttpServletRequest request){
-        User loginUser = userService.getLoginUser(request);
+    BaseResponse<List<TeamVO>> listTeams(TeamQueryDTO teamQueryDTO){
+        User loginUser = userService.getLoginUser();
 
         List<TeamVO> teamVOList = teamService.listTeams(teamQueryDTO, loginUser);
         return ResultUtils.success(teamVOList);
@@ -88,12 +88,12 @@ public class TeamController {
     }
 
     @PostMapping("/join")
-    BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinDTO teamJoinDTO, HttpServletRequest request){
+    BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinDTO teamJoinDTO){
         if(teamJoinDTO == null ){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
 
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
 
         boolean result = teamService.joinTeam(teamJoinDTO, loginUser);
         return ResultUtils.success(result);
@@ -101,11 +101,11 @@ public class TeamController {
 
     @ApiOperation(value = "非队长离开队伍")
     @PostMapping("/leave")
-    BaseResponse<Boolean> leaveTeam(@RequestBody Long teamId, HttpServletRequest request){
+    BaseResponse<Boolean> leaveTeam(@RequestBody Long teamId){
         if(teamId == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
 
         boolean result = teamService.leaveTeam(teamId, loginUser);
 
@@ -113,8 +113,8 @@ public class TeamController {
     }
 
     @GetMapping("/my")
-    BaseResponse<List<TeamVO>> myTeams(HttpServletRequest request){
-        User loginUser = userService.getLoginUser(request);
+    BaseResponse<List<TeamVO>> myTeams(){
+        User loginUser = userService.getLoginUser();
         List<TeamVO> teamVOList= teamService.myTeams(loginUser);
         return ResultUtils.success(teamVOList);
     }

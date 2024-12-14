@@ -19,7 +19,7 @@ import com.yupi.friend.model.entity.UserTeam;
 import com.yupi.friend.model.entity.UserWithScore;
 import com.yupi.friend.model.message.CacheUpdateMessage;
 import com.yupi.friend.model.vo.UserVO;
-import com.yupi.friend.mq.CacheUpdateProducer;
+import com.yupi.friend.mq.MessageProducer;
 import com.yupi.friend.service.UserService;
 import com.yupi.friend.service.UserTeamService;
 import com.yupi.friend.utils.AliOSSUtils;
@@ -39,7 +39,6 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.security.InvalidKeyException;
@@ -84,7 +83,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private UserTeamService userTeamService;
 
     @Resource
-    private CacheUpdateProducer cacheUpdateProducer;
+    private MessageProducer cacheUpdateProducer;
 
     /**
      * 用户注册
@@ -359,7 +358,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 CacheUpdateMessage msg = new CacheUpdateMessage();
                 msg.setKey("recommend");
                 msg.setValue(id);
-                cacheUpdateProducer.sendCacheUpdateMessage(msg, USER_CACHE_QUEUE);
+                cacheUpdateProducer.sendToQueue(msg, USER_CACHE_QUEUE);
             }
 
 
@@ -521,7 +520,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public User getLoginUser(HttpServletRequest request) {
+    public User getLoginUser() {
+        if(UserHolder.getUser() == null){
+            return null;
+        }
         Long id = UserHolder.getUser().getId();
         return this.getById(id);
     }
@@ -660,7 +662,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         UserVO userVO = redisCacheClient.getHashObject(key, UserVO.class);
 
         if(userVO != null){
-            // 缓存存在，刷新缓存
+            // 缓存存在，刷新缓存有效期
             redisCacheClient.expireKey(key, USER_TTL, TimeUnit.MINUTES);
             return userVO;
         }

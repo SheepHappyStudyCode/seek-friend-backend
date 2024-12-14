@@ -15,7 +15,6 @@ import com.yupi.friend.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -28,18 +27,18 @@ public class PostController {
     private UserService userService;
 
     @PostMapping("/add")
-    BaseResponse<Long> addPost(@RequestBody PostAddDTO PostAddDTO, HttpServletRequest request){
-        User loginUser = userService.getLoginUser(request);
+    BaseResponse<Long> addPost(@RequestBody PostAddDTO PostAddDTO){
+        User loginUser = userService.getLoginUser();
         Long id = postService.addPost(PostAddDTO, loginUser);
         return ResultUtils.success(id);
     }
 
     @PostMapping("/delete")
-    BaseResponse<Boolean> deletePost(@RequestBody IdRequest idRequest, HttpServletRequest request){
+    BaseResponse<Boolean> deletePost(@RequestBody IdRequest idRequest){
         if(idRequest == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
 
         boolean result = postService.deletePostById(idRequest.getId(), loginUser);
 
@@ -47,8 +46,8 @@ public class PostController {
     }
 
     @PostMapping("/update")
-    BaseResponse<Boolean> updatePost(@RequestBody PostUpdateDTO PostUpdateDTO, HttpServletRequest request){
-        User loginUser = userService.getLoginUser(request);
+    BaseResponse<Boolean> updatePost(@RequestBody PostUpdateDTO PostUpdateDTO){
+        User loginUser = userService.getLoginUser();
         Boolean result = postService.updatePost(PostUpdateDTO, loginUser);
         return ResultUtils.success(result);
     }

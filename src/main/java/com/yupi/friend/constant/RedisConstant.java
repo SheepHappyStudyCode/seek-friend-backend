@@ -18,4 +18,6 @@ public interface RedisConstant {
     String USER_LOGIN_KEY = "friend:user:login:";
 
     Long USER_LOGIN_TTL = 30L;
+
+    String POST_THUMB_MESSAGE_KEY = "friend:post:thumb:message:";
 }

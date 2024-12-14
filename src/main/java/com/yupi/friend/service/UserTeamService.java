@@ -1,7 +1,7 @@
 package com.yupi.friend.service;
 
-import com.yupi.friend.model.entity.UserTeam;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yupi.friend.model.entity.UserTeam;
 
 /**
 * @author Administrator

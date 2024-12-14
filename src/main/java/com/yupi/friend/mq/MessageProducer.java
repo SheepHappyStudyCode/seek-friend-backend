@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
 @Service
-public class CacheUpdateProducer {
+public class MessageProducer {
     @Resource
     private RabbitTemplate rabbitTemplate;
 
-    public <T> void sendCacheUpdateMessage(T message, String queueName) {
+    public <T> void sendToQueue(T message, String queueName) {
         rabbitTemplate.convertAndSend(queueName, message);
     }
 }

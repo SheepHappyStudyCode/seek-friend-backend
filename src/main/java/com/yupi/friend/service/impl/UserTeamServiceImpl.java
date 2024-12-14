@@ -1,9 +1,9 @@
 package com.yupi.friend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yupi.friend.mapper.UserTeamMapper;
 import com.yupi.friend.model.entity.UserTeam;
 import com.yupi.friend.service.UserTeamService;
-import com.yupi.friend.mapper.UserTeamMapper;
 import org.springframework.stereotype.Service;
 
 /**

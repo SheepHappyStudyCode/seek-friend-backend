@@ -2,13 +2,13 @@ package com.yupi.friend.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.yupi.friend.model.vo.TeamVO;
-import com.yupi.friend.model.entity.Team;
-import com.yupi.friend.model.entity.User;
 import com.yupi.friend.model.dto.TeamAddDTO;
 import com.yupi.friend.model.dto.TeamJoinDTO;
 import com.yupi.friend.model.dto.TeamQueryDTO;
 import com.yupi.friend.model.dto.TeamUpdateDTO;
+import com.yupi.friend.model.entity.Team;
+import com.yupi.friend.model.entity.User;
+import com.yupi.friend.model.vo.TeamVO;
 
 import java.util.List;
 

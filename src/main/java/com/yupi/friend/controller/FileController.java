@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/file")
@@ -20,8 +19,8 @@ public class FileController {
     private UserService userService;
 
     @PostMapping("/user/avatar")
-    public BaseResponse<Boolean> updateUserAvatar(MultipartFile avatar, HttpServletRequest request) {
-        User loginUser = userService.getLoginUser(request);
+    public BaseResponse<Boolean> updateUserAvatar(MultipartFile avatar) {
+        User loginUser = userService.getLoginUser();
 
         boolean result = userService.uploadAvatar(avatar, loginUser);
         return ResultUtils.success(result);
